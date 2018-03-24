@@ -58,8 +58,7 @@ object Settings {
       origMappings.filterNot { case (_, file) => file.endsWith("local.conf") }
     },
     libraryDependencies ++= Seq(
-      ws,
-      Dependencies.scalatest.play % Test,
+      Dependencies.scalatest.play % Test
     ),
     releaseProcess := releaseSteps
   )

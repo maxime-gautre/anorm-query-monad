@@ -2,11 +2,14 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET        /@/about             cinema.controllers.HomeController.about
+GET         /@/about             cinema.controllers.HomeController.about
 
+GET         /api/authors         cinema.controllers.HomeController.authors
+GET         /api/books           cinema.controllers.HomeController.books
+POST        /api/books           cinema.controllers.HomeController.createBook
 # Map static resources from the /public folder to the /assets URL path
-GET        /favicon.ico         core.controllers.XAssets.favicon
-GET        /assets/*file        core.controllers.XAssets.versioned(path="/public", file: controllers.Assets.Asset)
+GET         /favicon.ico         core.controllers.XAssets.favicon
+GET         /assets/*file        core.controllers.XAssets.versioned(path="/public", file: controllers.Assets.Asset)
 
 # Application's entry point
-GET        /$any<.*>            cinema.controllers.HomeController.index(any: String)
+GET         /$any<.*>            cinema.controllers.HomeController.index(any: String)
