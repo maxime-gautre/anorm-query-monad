@@ -1,0 +1,12 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET        /@/about             cinema.controllers.HomeController.about
+
+# Map static resources from the /public folder to the /assets URL path
+GET        /favicon.ico         core.controllers.XAssets.favicon
+GET        /assets/*file        core.controllers.XAssets.versioned(path="/public", file: controllers.Assets.Asset)
+
+# Application's entry point
+GET        /$any<.*>            cinema.controllers.HomeController.index(any: String)
