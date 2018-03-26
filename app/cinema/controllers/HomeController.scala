@@ -1,7 +1,8 @@
 package cinema.controllers
 
-import cinema.models.BookCreation
+import cinema.models.{AuthorCreation, BookCreation}
 import cinema.persistence.{AuthorPersistence, BookPersistence}
+import core.database.QueryRunner
 import play.api.libs.json.Json
 import play.api.mvc._
 
@@ -9,8 +10,7 @@ import scala.concurrent.ExecutionContext
 
 class HomeController(
     cc: ControllerComponents,
-    authorPersistence: AuthorPersistence,
-    bookPersistence: BookPersistence,
+    queryRunner: QueryRunner
 )(implicit ec: ExecutionContext)
     extends AbstractController(cc) {
 
@@ -24,19 +24,24 @@ class HomeController(
   }
 
   def authors = Action.async {
-    authorPersistence.list().map { authors =>
+    queryRunner.run(AuthorPersistence.list()).map { authors =>
       Ok(Json.toJson(authors))
     }
   }
 
   def books = Action.async {
-    bookPersistence.list().map { books =>
+    queryRunner.run(BookPersistence.list()).map { books =>
       Ok(Json.toJson(books))
     }
   }
 
   def createBook = Action.async(parse.json[BookCreation]) { request =>
-    bookPersistence.create(request.body).map { id =>
+    val query = for {
+      authorId <- AuthorPersistence.create(AuthorCreation(request.body.author))
+      bookId <- BookPersistence.create(request.body, authorId)
+    } yield bookId
+
+    queryRunner.commit(query).map { id =>
       Created(Json.obj("id" -> id))
     }
   }

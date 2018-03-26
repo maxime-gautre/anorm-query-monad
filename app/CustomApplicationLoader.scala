@@ -1,5 +1,5 @@
-import cinema.persistence.{AuthorPersistence, BookPersistence}
 import controllers.AssetsComponents
+import core.database.QueryRunner
 import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.routing.Router
 import play.api.{
@@ -33,8 +33,7 @@ class CustomComponents(context: ApplicationLoader.Context)
     httpErrorHandler,
     new cinema.controllers.HomeController(
       controllerComponents,
-      new AuthorPersistence(dbApi.database("cinema")),
-      new BookPersistence(dbApi.database("cinema"))
+      new QueryRunner(dbApi.database("cinema"))
     ),
     new core.controllers.XAssets(
       environment,

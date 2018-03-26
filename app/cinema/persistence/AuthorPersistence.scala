@@ -1,22 +1,28 @@
 package cinema.persistence
 
-import anorm.SQL
-import cinema.models.Author
-import play.api.db.Database
+import anorm.{SQL, SqlParser}
+import cinema.models.{Author, AuthorCreation}
+import core.database.Query
 
-import scala.concurrent.{ExecutionContext, Future}
+object AuthorPersistence {
 
-class AuthorPersistence(database: Database) {
+  def list(): Query[List[Author]] = Query { implicit connection =>
+    SQL(
+      """
+        |SELECT * from authors
+      """.stripMargin
+    ).as(Author.authorParser.*)
+  }
 
-  def list()(implicit ec: ExecutionContext): Future[List[Author]] = {
-    Future {
-      database.withConnection { implicit c =>
-        SQL(
-          """
-            |SELECT * from authors
-          """.stripMargin
-        ).as(Author.authorParser.*)
-      }
-    }
+  def create(authorCreation: AuthorCreation): Query[Int] = Query {
+    implicit connection =>
+      val authorId = SQL(
+        s"""
+         |INSERT INTO authors (name) VALUES ('${authorCreation.name}')
+         |ON CONFLICT (name) DO UPDATE SET name = '${authorCreation.name}'
+      """.stripMargin
+      ).executeInsert(SqlParser.scalar[Int].single)
+
+      authorId
   }
 }
