@@ -1,8 +1,9 @@
 package bookstore.persistence
 
 import anorm.{SQL, SqlParser}
-import bookstore.models.{Author, AuthorCreation}
+
 import core.database.Query
+import bookstore.models.{Author, AuthorCreation}
 
 object AuthorPersistence {
 

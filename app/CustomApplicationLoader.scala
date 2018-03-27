@@ -1,14 +1,11 @@
-import controllers.AssetsComponents
-import core.database.QueryRunner
 import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.routing.Router
-import play.api.{
-  ApplicationLoader,
-  BuiltInComponentsFromContext,
-  LoggerConfigurator
-}
+import play.api.{ApplicationLoader, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.filters.HttpFiltersComponents
+import controllers.AssetsComponents
 import router.Routes
+
+import core.database.QueryRunner
 
 class CustomApplicationLoader extends ApplicationLoader {
   def load(context: ApplicationLoader.Context) = {

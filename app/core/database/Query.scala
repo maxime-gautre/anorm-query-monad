@@ -2,11 +2,11 @@ package core.database
 
 import java.sql.Connection
 
-import play.api.db.Database
-
 import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
+
+import play.api.db.Database
 
 class Query[A](val block: Connection => A) {
 

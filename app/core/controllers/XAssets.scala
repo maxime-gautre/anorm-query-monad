@@ -2,9 +2,9 @@ package core.controllers
 
 import controllers.Assets.Asset
 import controllers.AssetsMetadata
-import play.api.{Environment, Mode}
 import play.api.http.HttpErrorHandler
 import play.api.mvc._
+import play.api.{Environment, Mode}
 
 class XAssets(
     environment: Environment,
