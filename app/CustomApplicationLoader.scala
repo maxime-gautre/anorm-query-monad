@@ -31,9 +31,9 @@ class CustomComponents(context: ApplicationLoader.Context)
 
   lazy val router: Router = new Routes(
     httpErrorHandler,
-    new cinema.controllers.HomeController(
+    new bookstore.controllers.HomeController(
       controllerComponents,
-      new QueryRunner(dbApi.database("cinema"))
+      new QueryRunner(dbApi.database("bookstore"))
     ),
     new core.controllers.XAssets(
       environment,

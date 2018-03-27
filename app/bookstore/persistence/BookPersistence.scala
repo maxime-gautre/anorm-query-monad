@@ -1,7 +1,7 @@
-package cinema.persistence
+package bookstore.persistence
 
 import anorm.{SQL, SqlParser}
-import cinema.models.{Book, BookCreation}
+import bookstore.models.{Book, BookCreation}
 import core.database.Query
 
 object BookPersistence {

@@ -12,11 +12,13 @@ This example uses the following:
 
 ## Setup and run
 
-Deploy the postgres database in docker
+- Deploy the postgres database in docker
 ```
 docker stack deploy -c stack.yml postgres
 ```
-Run the play application
+
+- Add the database [schema](conf/db/schema.sql).
+- Run the play application
 ```
 sbt run
 ```

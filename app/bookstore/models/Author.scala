@@ -1,4 +1,4 @@
-package cinema.models
+package bookstore.models
 
 import anorm.Macro
 import play.api.libs.json.Json

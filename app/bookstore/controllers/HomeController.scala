@@ -1,7 +1,7 @@
-package cinema.controllers
+package bookstore.controllers
 
-import cinema.models.{AuthorCreation, BookCreation}
-import cinema.persistence.{AuthorPersistence, BookPersistence}
+import bookstore.models.{AuthorCreation, BookCreation}
+import bookstore.persistence.{AuthorPersistence, BookPersistence}
 import core.database.QueryRunner
 import play.api.libs.json.Json
 import play.api.mvc._
