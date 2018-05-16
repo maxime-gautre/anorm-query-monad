@@ -3,46 +3,58 @@ package core.database
 import java.sql.Connection
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.mutable
 import scala.language.higherKinds
 
-import play.api.db.Database
+/**
+  * Query is just a wrapper around a function `C => A`.
+  * The first type parameter C stands for ‘environment’ or 'context'.
+  * The second type parameter A is whatever our functions return.
+  *
+  * This is a lightweight representation of the reader monad.
+  *
+  * Limitations:
+  *  - Make sure that whatever you compute is evaluated eagerly and no longer depends on the resource, e.g
+  *    avoid Future or Iterator or lazy value.
+  *  - FlatMap is not stack safe
+  */
+class Query[-C, +A](block: C => A) {
 
-class Query[A](val block: Connection => A) {
-
-  def map[B](f: A => B): Query[B] = {
-    Query { connection =>
-      f(block(connection))
+  def map[B](f: A => B): Query[C, B] = {
+    Query { c =>
+      f(block(c))
     }
   }
 
-  def flatMap[B](f: A => Query[B]): Query[B] = {
-    Query { connection =>
-      f(block(connection)).block(connection)
+  def flatMap[B, D <: C](f: A => Query[D, B]): Query[D, B] = {
+    Query { c =>
+      f(run(c)).run(c)
     }
   }
 
-  def zip[B](query: Query[B]): Query[(A, B)] = {
-    flatMap { a =>
-      query.map { b =>
-        a -> b
-      }
-    }
-  }
+  def run(c: C): A = block(c)
 }
 
 object Query {
-  def apply[A](block: Connection => A) = new Query(block)
+  def apply[C, A](block: C => A) = new Query(block)
 
-  @inline def pure[A](a: A) = Query(_ => a)
+  /**
+    * `pure` lifts any value into the Query.
+    *
+    */
+  @inline def pure[C, A](a: A): Query[C, A] = Query[C, A](_ => a)
 
-  @inline def failure[A](exception: => Exception): Query[A] =
-    Query(_ => throw exception)
+  @inline def failure[C, A](exception: => Exception): Query[C, A] =
+    Query[C, A](_ => throw exception)
 
-  def sequence[A, M[X] <: TraversableOnce[X]](
-      elements: M[Query[A]]
-  )(implicit cbf: CanBuildFrom[M[Query[A]], A, M[A]]): Query[M[A]] = {
-    val queries = elements.foldLeft(Query.pure(cbf(elements))) {
+  /**
+    * Transforms a Seq[Query[C, A]] to a Query[C, Seq[A]]
+    */
+  def sequence[C, A, M[X] <: TraversableOnce[X]](
+      elements: M[Query[C, A]]
+  )(implicit cbf: CanBuildFrom[M[Query[C, A]], A, M[A]]): Query[C, M[A]] = {
+    val queries = elements.foldLeft(
+      Query.pure[C, mutable.Builder[A, M[A]]](cbf(elements))) {
       (builderQ, currentQuery) =>
         for {
           builder <- builderQ
@@ -53,7 +65,10 @@ object Query {
     queries.map(_.result())
   }
 
-  def sequence[A](queryOpt: Option[Query[A]]): Query[Option[A]] = {
+  /**
+    * Transforms a Option[Query[C, A]] to a Query[C, Option[A]]
+    */
+  def sequence[C, A](queryOpt: Option[Query[C, A]]): Query[C, Option[A]] = {
     queryOpt match {
       case Some(value) => value.map(Some(_))
       case None        => Query.pure(None)
@@ -61,16 +76,15 @@ object Query {
   }
 }
 
-class QueryRunner(database: Database)(implicit ec: ExecutionContext) {
-  def run[A](query: Query[A]): Future[A] = Future {
-    database.withConnection {
-      query.block
-    }
+package object data {
+
+  /**
+    * Type alias where the context is a java.sql.Connection
+    */
+  type DatabaseQuery[A] = Query[Connection, A]
+
+  object DatabaseQuery {
+    def apply[A](block: Connection => A): DatabaseQuery[A] = new Query(block)
   }
 
-  def commit[A](query: Query[A]): Future[A] = Future {
-    database.withTransaction {
-      query.block
-    }
-  }
 }

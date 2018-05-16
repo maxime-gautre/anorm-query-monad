@@ -2,21 +2,22 @@ package bookstore.persistence
 
 import anorm.{SQL, SqlParser}
 
-import core.database.Query
+import core.database.data.DatabaseQuery
 import bookstore.models.{Author, AuthorCreation}
 
 object AuthorPersistence {
 
-  def list(): Query[List[Author]] = Query { implicit connection =>
-    SQL(
-      """
+  def list(): DatabaseQuery[List[Author]] = DatabaseQuery {
+    implicit connection =>
+      SQL(
+        """
         |SELECT * from authors
       """.stripMargin
-    ).as(Author.authorParser.*)
+      ).as(Author.authorParser.*)
   }
 
-  def create(authorCreation: AuthorCreation): Query[Int] = Query {
-    implicit connection =>
+  def create(authorCreation: AuthorCreation): DatabaseQuery[Int] =
+    DatabaseQuery { implicit connection =>
       val authorId = SQL(
         s"""
          |INSERT INTO authors (name) VALUES ('${authorCreation.name}')
@@ -25,5 +26,5 @@ object AuthorPersistence {
       ).executeInsert(SqlParser.scalar[Int].single)
 
       authorId
-  }
+    }
 }

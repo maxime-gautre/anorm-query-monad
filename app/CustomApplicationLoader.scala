@@ -1,11 +1,15 @@
+import controllers.AssetsComponents
 import play.api.db.{DBComponents, HikariCPComponents}
 import play.api.routing.Router
-import play.api.{ApplicationLoader, BuiltInComponentsFromContext, LoggerConfigurator}
+import play.api.{
+  ApplicationLoader,
+  BuiltInComponentsFromContext,
+  LoggerConfigurator
+}
 import play.filters.HttpFiltersComponents
-import controllers.AssetsComponents
 import router.Routes
 
-import core.database.QueryRunner
+import core.database.DatabaseQueryRunner
 
 class CustomApplicationLoader extends ApplicationLoader {
   def load(context: ApplicationLoader.Context) = {
@@ -30,7 +34,7 @@ class CustomComponents(context: ApplicationLoader.Context)
     httpErrorHandler,
     new bookstore.controllers.HomeController(
       controllerComponents,
-      new QueryRunner(dbApi.database("bookstore"))
+      new DatabaseQueryRunner(dbApi.database("bookstore"))
     ),
     new core.controllers.XAssets(
       environment,

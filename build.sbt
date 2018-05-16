@@ -1,6 +1,6 @@
 scalaVersion in ThisBuild := "2.12.4"
 
-name := """anorm-query-manad"""
+name := """anorm-query-monad"""
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala, BuildInfoPlugin, SbtWeb)
