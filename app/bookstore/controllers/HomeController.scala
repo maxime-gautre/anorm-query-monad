@@ -1,5 +1,7 @@
 package bookstore.controllers
 
+import java.sql.Connection
+
 import scala.concurrent.ExecutionContext
 
 import play.api.libs.json.Json
@@ -11,7 +13,7 @@ import bookstore.persistence.{AuthorPersistence, BookPersistence}
 
 class HomeController(
     cc: ControllerComponents,
-    queryRunner: QueryRunner
+    queryRunner: QueryRunner[Connection]
 )(implicit ec: ExecutionContext)
     extends AbstractController(cc) {
 
