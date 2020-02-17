@@ -1,4 +1,4 @@
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.10"
 
 name := """anorm-query-monad"""
 

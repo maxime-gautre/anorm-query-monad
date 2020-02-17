@@ -27,13 +27,13 @@ class HomeController(
   }
 
   def authors = Action.async {
-    queryRunner.run(AuthorPersistence.list()).map { authors =>
+    queryRunner.execute(AuthorPersistence.list()).map { authors =>
       Ok(Json.toJson(authors))
     }
   }
 
   def books = Action.async {
-    queryRunner.run(BookPersistence.list()).map { books =>
+    queryRunner.execute(BookPersistence.list()).map { books =>
       Ok(Json.toJson(books))
     }
   }
@@ -44,7 +44,7 @@ class HomeController(
       bookId <- BookPersistence.create(request.body, authorId)
     } yield bookId
 
-    queryRunner.commit(query).map { id =>
+    queryRunner.transactional(query).map { id =>
       Created(Json.obj("id" -> id))
     }
   }

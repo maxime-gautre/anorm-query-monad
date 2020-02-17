@@ -10,9 +10,9 @@ import play.api.db.{Database, NamedDatabase}
 import core.database.data.DatabaseQuery
 
 trait QueryRunner[C] {
-  def run[A](query: Query[C, A]): Future[A]
+  def execute[A](query: Query[C, A]): Future[A]
 
-  def commit[A](query: Query[C, A]): Future[A]
+  def transactional[A](query: Query[C, A]): Future[A]
 }
 
 class DatabaseQueryRunner @Inject()(
@@ -20,13 +20,13 @@ class DatabaseQueryRunner @Inject()(
 )(implicit ec: ExecutionContext)
     extends QueryRunner[Connection] {
 
-  def run[A](query: DatabaseQuery[A]): Future[A] = Future {
+  def execute[A](query: DatabaseQuery[A]): Future[A] = Future {
     database.withConnection { c =>
       query.run(c)
     }
   }
 
-  def commit[A](query: DatabaseQuery[A]): Future[A] = Future {
+  def transactional[A](query: DatabaseQuery[A]): Future[A] = Future {
     database.withTransaction { c =>
       query.run(c)
     }

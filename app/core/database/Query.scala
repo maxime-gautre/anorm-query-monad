@@ -5,6 +5,8 @@ import java.sql.Connection
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable
 import scala.language.higherKinds
+import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
 /**
   * Query is just a wrapper around a function `C => A`.
@@ -32,6 +34,22 @@ class Query[-C, +A](block: C => A) {
     }
   }
 
+  /**
+    * Applies the given function `pf` if this query is a `Failure`.
+    * If there is no match, or if this query contains a valid result
+    * then the new query will contain the same result.
+    */
+  def recoverWith[B >: A, D <: C](
+      pf: PartialFunction[Throwable, Query[D, B]]): Query[D, B] = {
+    Query { c =>
+      try {
+        run(c)
+      } catch {
+        case NonFatal(e) if pf isDefinedAt e => pf.apply(e).run(c)
+      }
+    }
+  }
+
   def run(c: C): A = block(c)
 }
 
@@ -40,12 +58,22 @@ object Query {
 
   /**
     * `pure` lifts any value into the Query.
-    *
     */
   @inline def pure[C, A](a: A): Query[C, A] = Query[C, A](_ => a)
 
-  @inline def failure[C, A](exception: => Exception): Query[C, A] =
-    Query[C, A](_ => throw exception)
+  /**
+    * Creates a Query that will fail on execution.
+    */
+  @inline def failure[C, A](t: => Throwable): Query[C, A] =
+    Query[C, A](_ => throw t)
+
+  /**
+    * Creates a Query with the specified result or exception.
+    */
+  def fromTry[C, A](result: Try[A]): Query[C, A] = result match {
+    case Success(a) => pure(a)
+    case Failure(t) => failure(t)
+  }
 
   /**
     * Transforms a Seq[Query[C, A]] to a Query[C, Seq[A]]
@@ -72,6 +100,17 @@ object Query {
     queryOpt match {
       case Some(value) => value.map(Some(_))
       case None        => Query.pure(None)
+    }
+  }
+
+  /**
+    * Transforms a Query[C, Option[A]] to a Query[C, A], returning a Query.failure when option is empty.
+    */
+  def mapOptionToError[C, A](query: Query[C, Option[A]],
+                             exception: Exception): Query[C, A] = {
+    query.flatMap {
+      case Some(value) => Query.pure(value)
+      case None        => Query.failure(exception)
     }
   }
 }
