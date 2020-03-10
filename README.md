@@ -39,7 +39,8 @@ The following are desirable:
 
 This project introduces a new data type [Query](app/core/database/Query.scala).
 Query treats functions as value in the context of a database connection. 
-```
+```scala 
+
 val query: Query[Book] = for {
   authorId <- Query(connection => SQL("SELECT id from authors where name = $name").as(SqlParser.scalar[Int].single)
   book <- Query(connection => SQL("SELECT * from books where authorId = $authorId").as(SqlParser.scalar[Book].single)
